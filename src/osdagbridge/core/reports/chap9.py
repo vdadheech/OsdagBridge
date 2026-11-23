@@ -1,3 +1,4 @@
+from osdagbridge.core.reports.styles import OSDAG_GREEN
 def references():
     return r"""
 \chapter*{References}

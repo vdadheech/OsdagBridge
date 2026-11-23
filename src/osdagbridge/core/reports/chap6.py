@@ -1,3 +1,4 @@
+from osdagbridge.core.reports.styles import CHART_DPI
 def ch6_drawings(fig_paths):
     """Chapter 6 – Drawings and Visualizations.
 

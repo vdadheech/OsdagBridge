@@ -1,4 +1,5 @@
 from osdagbridge.core.reports.report_utils import _tex
+from osdagbridge.core.reports.styles import make_longtable_header
 
 
 def ch1_project_info(m):
@@ -10,23 +11,27 @@ This section records all project metadata as entered by the designer.
 \section{Project and Design Team Details}
 \label{sec:project-details}
 
-\begin{tabular}{|L{5.5cm}|L{8.5cm}|}
+\begin{longtable}{|L{5.5cm}|L{9.5cm}|}
+\caption{\textbf{Project and Design Team Details}}\\
 \hline
-\textbf{Project Name} & """ + _tex(m.project_name) + r""" \\
+\textbf{Parameter} & \textbf{Details} \\[6pt]
 \hline
-\textbf{Project Location} & """ + _tex(m.project_location) + r""" \\
+""" + make_longtable_header(2, r"\textbf{Parameter} & \textbf{Details} \\[6pt]", "Project and Design Team Details") + r"""
+\textnormal{Project Name} & """ + _tex(m.project_name) + r""" \\[6pt]
 \hline
-\textbf{Designer} & """ + _tex(m.designer) + r""" \\
+\textnormal{Project Location} & """ + _tex(m.project_location) + r""" \\[6pt]
 \hline
-\textbf{Reviewer} & """ + _tex(m.reviewer) + r""" \\
+\textnormal{Designer} & """ + _tex(m.designer) + r""" \\[6pt]
 \hline
-\textbf{Organization} & """ + _tex(m.company) + r""" \\
+\textnormal{Reviewer} & """ + _tex(m.reviewer) + r""" \\[6pt]
 \hline
-\textbf{Client} & """ + _tex(m.client) + r""" \\
+\textnormal{Organization} & """ + _tex(m.company) + r""" \\[6pt]
 \hline
-\textbf{Software Version} & OsdagBridge \\
+\textnormal{Client} & """ + _tex(m.client) + r""" \\[6pt]
 \hline
-\end{tabular}
+\textnormal{Software Version} & OsdagBridge \\[6pt]
+\hline
+\end{longtable}
 
 
 \section{Applicable Codes and Standards}
@@ -44,5 +49,3 @@ This section records all project metadata as entered by the designer.
 \item Indian Standard (IS) 6006: Steel Bearings
 \end{itemize}
 """
-
-

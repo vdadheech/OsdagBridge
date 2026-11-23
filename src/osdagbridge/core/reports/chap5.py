@@ -142,10 +142,12 @@ from osdagbridge.core.utils.common import (
 )
 
 from osdagbridge.core.reports.report_utils import _tex, _render_value, get_girder_entries
+from osdagbridge.core.reports.styles import make_longtable_header
 
 if TYPE_CHECKING:
     pass
-def ch5_design_checks(checks_data, bridge) -> str:
+def ch5_design_checks(checks_data, bridge, fig_paths=None) -> str:
+    fig_paths = fig_paths or {}
     """Chapter 5 — Design Checks.
 
     Parameters
@@ -468,16 +470,17 @@ def ch5_design_checks(checks_data, bridge) -> str:
         _total_mm = bridge.output_dict.get(f"{KEY_SD_DEFL_TOTAL}.G{_gi}")
 
         t510_rows.append(
-            r"\multirow{2}{*}{\makecell{" + lbl + r"""}} & Live Load Deflection, $\delta_{LL}$ (mm) & """
-            + _allow_live_str + r""" & """
-            + _dfmt(_live_mm,  nd=3) + r""" & """
-            + _defl_status(_live_mm,  _allow_live_mm) + r""" \\[6pt]
-\cline{2-5}
- & Total Load Deflection, $\delta_{total}$ (mm) & """
-            + _allow_total_str + r""" & """
-            + _dfmt(_total_mm, nd=3) + r""" & """
-            + _defl_status(_total_mm, _allow_total_mm) + r""" \\[6pt]
-\hline"""
+            r"\needspace{5\baselineskip}" + "\n"
+            + r"\multirow{2}{*}{\makecell{" + lbl + r"}} & Live Load Deflection, $\delta_{LL}$ (mm) & "
+            + _allow_live_str + r" & "
+            + _dfmt(_live_mm,  nd=3) + r" & "
+            + _defl_status(_live_mm,  _allow_live_mm) + r" \\*[6pt]" + "\n"
+            + r"\cline{2-5}" + "\n"
+            + r" & Total Load Deflection, $\delta_{total}$ (mm) & "
+            + _allow_total_str + r" & "
+            + _dfmt(_total_mm, nd=3) + r" & "
+            + _defl_status(_total_mm, _allow_total_mm) + r" \\[6pt]" + "\n"
+            + r"\hline"
         )
     t510_content = "\n".join(t510_rows)
 
@@ -1065,6 +1068,51 @@ Fatigue Shear Resistance, $Q_r$ & IRC 22 Table 8 ($\phi d$, $N_{sc}$) & """
     ]
     t522_content = "\n".join(_t522)
 
+
+    # ── Section 5.5: Utilization Ratio Charts Generation ───────────────────────
+    ur_figs = []
+    if fig_paths.get('ur_girders'):
+        p = fig_paths['ur_girders'].replace('\\', '/')
+        ur_figs.append(
+            r"\begin{figure}[H]" + "\n"
+            + r"\centering" + "\n"
+            + r"\includegraphics[width=0.88\textwidth]{" + p + r"}" + "\n"
+            + r"\caption{\textbf{Utilization Ratio (Demand / Capacity) --- Girders}}" + "\n"
+            + r"\label{fig:ur-girders}" + "\n"
+            + r"\end{figure}"
+        )
+    if fig_paths.get('ur_deck_slab'):
+        p = fig_paths['ur_deck_slab'].replace('\\', '/')
+        ur_figs.append(
+            r"\begin{figure}[H]" + "\n"
+            + r"\centering" + "\n"
+            + r"\includegraphics[width=0.88\textwidth]{" + p + r"}" + "\n"
+            + r"\caption{\textbf{Utilization Ratio (Demand / Capacity) --- Concrete Deck Slab}}" + "\n"
+            + r"\label{fig:ur-deck}" + "\n"
+            + r"\end{figure}"
+        )
+    if fig_paths.get('ur_cross_bracing'):
+        p = fig_paths['ur_cross_bracing'].replace('\\', '/')
+        ur_figs.append(
+            r"\begin{figure}[H]" + "\n"
+            + r"\centering" + "\n"
+            + r"\includegraphics[width=0.88\textwidth]{" + p + r"}" + "\n"
+            + r"\caption{\textbf{Utilization Ratio (Demand / Capacity) --- Cross Bracing}}" + "\n"
+            + r"\label{fig:ur-cross-bracing}" + "\n"
+            + r"\end{figure}"
+        )
+    if fig_paths.get('ur_end_diaphragms'):
+        p = fig_paths['ur_end_diaphragms'].replace('\\', '/')
+        ur_figs.append(
+            r"\begin{figure}[H]" + "\n"
+            + r"\centering" + "\n"
+            + r"\includegraphics[width=0.88\textwidth]{" + p + r"}" + "\n"
+            + r"\caption{\textbf{Utilization Ratio (Demand / Capacity) --- End Diaphragms}}" + "\n"
+            + r"\label{fig:ur-end-diaphragm}" + "\n"
+            + r"\end{figure}"
+        )
+
+    ur_figures_tex = "\n\\vspace{0.5em}\n".join(ur_figs) if ur_figs else r"\textit{(Utilization Ratio charts generated during design execution)}"
     return r"""
 \chapter{Design Checks}
 
@@ -1487,6 +1535,16 @@ End diaphragms at the supports transfer transverse loads to the bearings, restra
 \noindent\textit{Note: Designed per IS 800 Cl. 7 (compression) and Cl. 6 (tension). OsdagBridge cross-bracing module used.}
 
 % ===========================
+% ===========================
+\section{Utilization Ratio (UR) Evaluation and Charts}
+\label{sec:ur-charts}
+% ===========================
+
+The Demand-to-Capacity Ratio (Utilization Ratio, UR) provides a direct evaluation of structural safety across all bridge components. A UR value $\leq 1.0$ indicates that component capacity exceeds design demands. A red dashed reference line at $\text{UR} = 1.0$ marks the design limit threshold.
+
+""" + ur_figures_tex + r"""
+
+\vspace{1em}
 \section{Overall Design Check Summary}
 \label{sec:overall-summary}
 % ===========================

@@ -156,7 +156,7 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
 \documentclass[12pt,a4paper]{report}
 
 % Packages
-\usepackage[a4paper, margin=1in]{geometry}
+\usepackage[a4paper, margin=1in, bottom=1.15in, footskip=0.55in]{geometry}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -194,17 +194,18 @@ def preamble(project_name, job_number, report_date, report_version='Rev 0'):
 \numberwithin{figure}{chapter}
 % Table layout and spacing: consistent padding, row height, and longtable pre/post skips
 \setlength{\tabcolsep}{6pt}
-\renewcommand{\arraystretch}{1.12}
+\renewcommand{\arraystretch}{1.18}
 \setlength{\LTpre}{0pt}
 \setlength{\LTpost}{6pt}
 % Table rules (outline thickness) and small extra row height for clarity
 \setlength{\arrayrulewidth}{0.5pt}
-\setlength{\extrarowheight}{0.6pt}
+\setlength{\extrarowheight}{1.5pt}
 
 % Prevent tables from overflowing past the page bottom:
-% if fewer than 5 baseline-skips remain, break to the next page first.
-\BeforeBeginEnvironment{table}{\needspace{5\baselineskip}}
-\BeforeBeginEnvironment{longtable}{\needspace{5\baselineskip}}
+% if fewer than 6 baseline-skips remain, break to the next page first.
+\BeforeBeginEnvironment{table}{\needspace{6\baselineskip}}
+\BeforeBeginEnvironment{longtable}{\needspace{6\baselineskip}}
+\AtBeginEnvironment{longtable}{\raggedbottom}
 
 \definecolor{osdagGreen}{HTML}{91B014}
 
@@ -479,7 +480,7 @@ class ReportDataBridge:
         member    "diagonal" or "chord"
         force_type "tension" or "compression"
         """
-        from osdagbridge.core.bridge_types.plate_girder.results_data import _extract_osdag_summary
+        from osdagbridge.core.reports.report_utils import _extract_osdag_summary
         try:
             raw = self._cb_pair_designs()[pair][member][force_type]
             return _extract_osdag_summary(raw or {})
@@ -901,6 +902,22 @@ def generate_report(payload, request):
 
             # ── Assemble LaTeX document (fig_paths now has tmp_dir paths) ──
             bridge = ReportDataBridge(payload.output_dict, payload.inputs, payload)
+            # ── Auto-generate UR charts (Section 5.5) and Quantity charts (Chapter 7) ──
+            try:
+                from osdagbridge.core.reports.charts.ur_charts import generate_all_ur_charts
+                ur_paths = generate_all_ur_charts(bridge, tmp_dir=tmp_images)
+                for k, p in ur_paths.items():
+                    fig_paths[f"ur_{k.replace(' ', '_').lower()}"] = p.replace('\\', '/')
+            except Exception as _ce:
+                logger.warning(f"Could not generate UR charts: {_ce}")
+
+            try:
+                from osdagbridge.core.reports.charts.quantity_charts import generate_all_quantity_charts
+                qty_paths = generate_all_quantity_charts(payload.inputs, tmp_dir=tmp_images)
+                for k, p in qty_paths.items():
+                    fig_paths[f"qty_{k}"] = p.replace('\\', '/')
+            except Exception as _qe:
+                logger.warning(f"Could not generate quantity charts: {_qe}")
             span_m = float(payload.inputs.get(KEY_SPAN, 0) or 0)
 
             doc_parts = []
@@ -924,11 +941,11 @@ def generate_report(payload, request):
             if 'analysis' in secs:
                 doc_parts.append(ch4_analysis(payload.analysis_summary, fig_paths, bridge, span_m))
             if 'design_checks' in secs:
-                doc_parts.append(ch5_design_checks(payload.design_checks, bridge))
+                doc_parts.append(ch5_design_checks(payload.design_checks, bridge, fig_paths))
             if 'drawings' in secs and payload.options.include_figures:
                 doc_parts.append(ch6_drawings(fig_paths))
 
-            doc_parts.append(ch7_quantities(payload.inputs))
+            doc_parts.append(ch7_quantities(payload.inputs, fig_paths))
 
             mode = str(payload.inputs.get(KEY_DESIGN_MODE, "Optimized")).strip().lower()
             is_custom = mode in {"custom", "customized"}

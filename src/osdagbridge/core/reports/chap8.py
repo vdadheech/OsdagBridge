@@ -3,6 +3,7 @@ from typing import List
 from osdagbridge.core.utils.common import (
     KEY_DESIGN_MODE
 )
+from osdagbridge.core.reports.styles import make_longtable_header
 
 
 def ch8_design_log(log_entries: List[str], input_dict: dict) -> str:
@@ -39,6 +40,9 @@ def ch8_design_log(log_entries: List[str], input_dict: dict) -> str:
 
 
 def _ch8_assumptions(is_custom: bool) -> str:
+    hdr_irc = r"\textbf{Code} & \textbf{Year} & \textbf{Title / Scope} \\[6pt]"
+    hdr_is  = r"\textbf{Code} & \textbf{Year} & \textbf{Scope} \\[6pt]"
+
     assumptions = [
         r"""
 \chapter{Standards \& Assumptions}
@@ -57,47 +61,47 @@ form the basis of all design calculations in this software.
 
 \begingroup
 \setlength{\tabcolsep}{3.5pt}
-\begin{table}[H]
-\caption{\textbf{IRC Codes}}
-\begin{tabular}{|c|c|p{13cm}|}
+\begin{longtable}{|C{2.5cm}|C{2.0cm}|p{10.5cm}|}
+\caption{\textbf{IRC Codes}}\\
 \hline
-\textbf{Code} & \textbf{Year} & \textbf{Title / Scope} \\ 
+""" + hdr_irc + r"""
 \hline
-IRC 5 & 2015 & General Features of Design - carriageway widths, kerb, footpath dimensions \\ 
+""" + make_longtable_header(3, hdr_irc, "IRC Codes") + r"""
+IRC 5 & 2015 & General Features of Design - carriageway widths, kerb, footpath dimensions \\[6pt]
 \hline
-IRC 6 & 2017 & Loads and Load Combinations - dead load, live load, impact, wind, temperature, etc. \\ 
+IRC 6 & 2017 & Loads and Load Combinations - dead load, live load, impact, wind, temperature, etc. \\[6pt]
 \hline
-IRC 22 & 2015 & Composite Construction (LS) - Composite section properties, ULS/SLS design, shear connectors \\ 
+IRC 22 & 2015 & Composite Construction (LS) - Composite section properties, ULS/SLS design, shear connectors \\[6pt]
 \hline
-IRC 24 & 2010 & Steel Road Bridges (LS) - Stiffener design, skew angle limits, diaphragm requirements \\ 
+IRC 24 & 2010 & Steel Road Bridges (LS) - Stiffener design, skew angle limits, diaphragm requirements \\[6pt]
 \hline
-IRC 112 & 2020 & Concrete Road Bridges - Deck slab flexure, shear, crack width, reinforcement \\ 
+IRC 112 & 2020 & Concrete Road Bridges - Deck slab flexure, shear, crack width, reinforcement \\[6pt]
 \hline
-IRC SP 114 & 2018 & Seismic Design of Road Bridges \\ 
+IRC SP 114 & 2018 & Seismic Design of Road Bridges \\[6pt]
 \hline
-\end{tabular}
-\end{table}
+\end{longtable}
+\endgroup
 
 \begingroup
 \setlength{\tabcolsep}{3.5pt}
-\begin{table}[H]
-\caption{\textbf{IS Codes}}
-\begin{tabular}{|c|c|p{13cm}|}
+\begin{longtable}{|C{2.5cm}|C{2.0cm}|p{10.5cm}|}
+\caption{\textbf{IS Codes}}\\
 \hline
-\textbf{Code} & \textbf{Year} & \textbf{Scope} \\
+""" + hdr_is + r"""
 \hline
-IS 800 & 2007 & Steel construction - tension, compression, bending, shear, LTB, stiffeners, combined checks \\
+""" + make_longtable_header(3, hdr_is, "IS Codes") + r"""
+IS 800 & 2007 & Steel construction - tension, compression, bending, shear, LTB, stiffeners, combined checks \\[6pt]
 \hline
-IS 456 & 2000 & Concrete - simplified stress-block for deck moment capacity \\
+IS 456 & 2000 & Concrete - simplified stress-block for deck moment capacity \\[6pt]
 \hline
-IS 1786 & 2008 & Reinforcement steel properties \\
+IS 1786 & 2008 & Reinforcement steel properties \\[6pt]
 \hline
-IS 1893 (Part 3) & 2014 & Earthquake resistant design \\
+IS 1893 (Part 3) & 2014 & Earthquake resistant design \\[6pt]
 \hline
-IS 2062 & 2011 & Structural steel - yield and ultimate strength by grade \\
+IS 2062 & 2011 & Structural steel - yield and ultimate strength by grade \\[6pt]
 \hline
-\end{tabular}
-\end{table}
+\end{longtable}
+\endgroup
 
 \clearpage
 \section{Analysis and Design Assumptions of This Version}
@@ -191,5 +195,3 @@ IS 2062 & 2011 & Structural steel - yield and ultimate strength by grade \\
 """)
 
     return "\n".join(assumptions)
-
-

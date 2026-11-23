@@ -113,3 +113,22 @@ def _fig_embed(path, caption, width=r'\textwidth', height=None):
             r'}}')
 
 
+
+
+def _extract_osdag_summary(result: dict) -> dict:
+    if not result:
+        return {}
+    def _first(*keys):
+        for k in keys:
+            v = result.get(k)
+            if v is not None:
+                return v
+        return None
+
+    return {
+        "section":     _first("section_size.designation", "Optimum.Designation"),
+        "capacity_kN": _first("Member.tension_capacity",  "Design.Strength"),
+        "efficiency":  _first("Member.efficiency",        "Optimum.UR"),
+        "slenderness": result.get("Member.Slenderness"),
+        "connection":  "Welded" if "Weld.Type" in result else ("Bolted" if "Bolt.Type" in result else ""),
+    }
